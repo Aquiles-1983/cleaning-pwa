@@ -307,12 +307,12 @@ main{flex:1;padding:0 1.05rem calc(6.5rem + var(--botgap))}
 // que os compartilha, não precisa cadastrar um app novo).
 // ====================================================================
 var firebaseConfig = {
-  apiKey: "AIzaSyBNYW2L-cRRo1_Qdu2U9PYDg_CJFMjk9WA",
+  apiKey: "SUA_API_KEY",
   authDomain: "finpessoal-af2a8.firebaseapp.com",
   projectId: "finpessoal-af2a8",
-  storageBucket: "finpessoal-af2a8.firebasestorage.app",
+  storageBucket: "finpessoal-af2a8.appspot.com",
   messagingSenderId: "308208936410",
-  appId: "1:308208936410:web:adde12daa653a469a58ce3"
+  appId: "SEU_APP_ID"
 };
 firebase.initializeApp(firebaseConfig);
 </script>
@@ -1413,7 +1413,16 @@ document.addEventListener("click",function(e){
     catch(err){ toast("Código: "+S.house.code); }
     return;
   }
-  if(e.target.closest("[data-newcode]")){ S.house.code=code6(); save(); render(); toast("Novo código gerado"); return; }
+  if(e.target.closest("[data-newcode]")){
+    var oldCode = S.house.code;
+    var newCode = code6();
+    var houseId = S.house.id;
+    db.collection("cleaning_invites").doc(newCode).set({houseId:houseId}).then(function(){
+      S.house.code = newCode; save(); render(); toast("Novo código gerado");
+      if(oldCode){ db.collection("cleaning_invites").doc(oldCode).delete().catch(function(){}); }
+    }).catch(function(err){ toast("Não deu para gerar o código: "+(err&&err.message?err.message:err)); });
+    return;
+  }
 
   /* perfil */
   if(e.target.closest("[data-editme]")){ openMember(S.me); return; }
